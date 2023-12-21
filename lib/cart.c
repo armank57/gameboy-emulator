@@ -165,4 +165,6 @@ bool cart_load(char *cart) {
     }
 
     printf("\t Checksum     : %2.2X (%s)\n", ctx.header->checksum, (x & 0xFF) ? "PASSED" : "FAILED");
+
+    return true;
 }
