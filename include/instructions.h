@@ -3,6 +3,7 @@
 #include <common.h>
 
 typedef enum {
+    AM_IMP,
     AM_R_D16,
     AM_R_R,
     AM_MR_R,
@@ -18,7 +19,6 @@ typedef enum {
     AM_HL_SPR,
     AM_D16,
     AM_D8,
-    AM_IMP,
     AM_D16_R,
     AM_MR_D8,
     AM_MR,
@@ -97,7 +97,7 @@ typedef enum {
 } in_type;
 
 typedef enum {
-    CT_NONE, CT_NX, CT_Z, CT_NC, CT_C
+    CT_NONE, CT_NZ, CT_Z, CT_NC, CT_C
 } cond_type;
 
 typedef struct {
@@ -110,3 +110,5 @@ typedef struct {
 } instruction;
 
 instruction *instruction_by_opcode(u8 opcode);
+
+char *inst_name(in_type t);
