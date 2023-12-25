@@ -32,6 +32,7 @@ typedef struct {
     bool int_master_enabled;
     bool enabling_ime;
     u8 ie_register;
+    u8 int_flags;
 
 } cpu_context;
 
@@ -56,3 +57,6 @@ void cpu_set_reg8(reg_type rt, u8 val);
 
 u8 cpu_get_ie_register();
 void cpu_set_ie_register(u8 n);
+
+u8 cpu_get_int_flags();
+void cpu_set_int_flags(u8 value);
