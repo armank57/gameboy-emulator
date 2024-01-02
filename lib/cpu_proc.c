@@ -5,7 +5,7 @@
 
 // Processes CPU instructions...
 
-void cpu_set_flags(cpu_context *ctx, char z, char n, char h, char c) {
+void cpu_set_flags(cpu_context *ctx, int8_t z, int8_t n, int8_t h, int8_t c) {
     if (z != -1) {
         BIT_SET(ctx->regs.f, 7, z);
     }
@@ -71,6 +71,8 @@ static void proc_ld(cpu_context *ctx) {
             bus_write(ctx->mem_dest, ctx->fetched_data);
         }
 
+        emu_cycles(1);
+
         return;
     }
 
@@ -94,7 +96,7 @@ static void proc_ldh(cpu_context *ctx) {
     if (ctx->cur_inst->reg_1 == RT_A) {
         cpu_set_reg(ctx->cur_inst->reg_1, bus_read(0xFF00 | ctx->fetched_data));
     } else {
-        bus_write(0xFF00 | ctx->fetched_data, ctx->regs.a);
+        bus_write(ctx->mem_dest, ctx->regs.a);
     }
 
     emu_cycles(1);
@@ -131,7 +133,7 @@ static void proc_jp(cpu_context *ctx) {
 }
 
 static void proc_jr(cpu_context *ctx) {
-    char rel = (char)(ctx->fetched_data & 0xFF);
+    int8_t rel = (char)(ctx->fetched_data & 0xFF);
     u16 addr = ctx->regs.pc + rel;
     goto_addr(ctx, addr, false);
 }
@@ -164,7 +166,7 @@ static void proc_push(cpu_context *ctx) {
     emu_cycles(1);
     stack_push(hi);
 
-    u16 lo = (cpu_read_reg(ctx->cur_inst->reg_2) >> 8) & 0xFF;
+    u16 lo = cpu_read_reg(ctx->cur_inst->reg_1) & 0xFF;
     emu_cycles(1);
     stack_push(lo);
 
@@ -288,7 +290,7 @@ static void proc_sbc(cpu_context *ctx) {
 
     int z = cpu_read_reg(ctx->cur_inst->reg_1) - val == 0;
     int h = ((int)cpu_read_reg(ctx->cur_inst->reg_1) & 0xF) 
-        - ((int)ctx->fetched_data & 0xF) - ((int)CPU_FLAG_C)< 0;
+        - ((int)ctx->fetched_data & 0xF) - ((int)CPU_FLAG_C) < 0;
     int c = ((int)cpu_read_reg(ctx->cur_inst->reg_1)) 
         - ((int)ctx->fetched_data) - ((int)CPU_FLAG_C) < 0;
 
@@ -334,7 +336,7 @@ static void proc_cb(cpu_context *ctx) {
     u8 op = ctx->fetched_data;
     reg_type reg = decode_reg(op & 0b111);
     u8 bit = (op >> 3) & 0b111;
-    u8 bit_op = (op >> 6) & 0b111;
+    u8 bit_op = (op >> 6) & 0b11;
     u8 reg_val = cpu_read_reg8(reg);
 
     emu_cycles(1);
@@ -368,7 +370,7 @@ static void proc_cb(cpu_context *ctx) {
             bool setC = false;
             u8 result = (reg_val << 1) & 0xFF;
 
-            if ((reg_val) * (1 << 7) != 0) {
+            if ((reg_val & (1 << 7)) != 0) {
                 result |= 1;
                 setC = true;
             }
@@ -468,7 +470,7 @@ static void proc_stop(cpu_context *ctx) {
 static void proc_rla(cpu_context *ctx) {
     u8 u = ctx->regs.a;
     u8 cf = CPU_FLAG_C;
-    u8 c = (u >> c) & 1;
+    u8 c = (u >> 7) & 1;
 
     ctx->regs.a = (u << 1) | cf;
     cpu_set_flags(ctx, 0, 0, 0, c);
