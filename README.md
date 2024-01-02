@@ -19,4 +19,5 @@ This project requires the following packages, which I installed using Homebrew:
 ## References
 
 https://gbdev.io/pandocs/ - The most comprehensive technical reference to Game Boy available to the public
+
 https://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html - Table of all opcodes used by the CPU
